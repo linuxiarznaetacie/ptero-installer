@@ -15,9 +15,9 @@ cp pstatistic.blueprint /var/www/pterodactyl/pstatistic.blueprint
 cp pteromonaco.blueprint /var/www/pterodactyl/pteromonaco.blueprint
 cp redirect.blueprint /var/www/pterodactyl/redirect.blueprint
 cp resourcemanager.blueprint /var/www/pterodactyl/resourcemanager.blueprint
-cp nebula.blueprint /var/www/pterodactyl/nebula.blueprint
+#cp nebula.blueprint /var/www/pterodactyl/nebula.blueprint
 cd /var/www/pterodactyl
-blueprint -install nebula resourcemanager redirect pteromonaco pstatistic
+blueprint -install resourcemanager redirect pteromonaco pstatistic
 
 clear
 echo "+------------------------------------------------+"
