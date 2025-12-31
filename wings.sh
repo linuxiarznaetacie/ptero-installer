@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) 2025 Jakub Orłowski
+# Licensed under the MIT License. See LICENSE for details.
+
 HOST_MAN_LINK="" # Tutaj wklej swój link
 
 if [ "$EUID" -ne 0 ]; then
