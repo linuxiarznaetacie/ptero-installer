@@ -16,7 +16,7 @@ clear
 # --- POBIERANIE DANYCH ---
 
 while [ -z "$email" ]; do
-    read -p "Wpisz tutaj swoj adres e-mail (autora): " email
+    read -p "Wpisz tutaj swoj adres e-mail: " email
 done
 
 while [ -z "$app_url" ]; do
