@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) 2025 Jakub Orłowski
+# Licensed under the MIT License. See LICENSE for details.
+
 PUBLIC_IP=$(curl -s ifconfig.me)
 HOST_MAN_LINK=""
 
