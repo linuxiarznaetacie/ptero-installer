@@ -1,19 +1,16 @@
 #!/bin/bash
 
-# Pobieranie danych wstępnych
 PUBLIC_IP=$(curl -s ifconfig.me)
-HOST_MAN_LINK="" # Tutaj wklej swój link
+HOST_MAN_LINK=""
 
-# Wymuszenie roota
 if [ "$EUID" -ne 0 ]; then
   echo "Ten skrypt wymaga uprawnień roota. Próba restartu z sudo..."
   exec sudo "$0" "$@"
 fi
 
 apt update && apt upgrade -y
+apt install -y curl tar unzip mariadb-server nginx php-fpm php-common php-mysql php-cli php-gd php-mbstring php-bcmath php-xml php-curl php-zip redis-server composer
 clear
-
-# --- POBIERANIE DANYCH ---
 
 while [ -z "$email" ]; do
     read -p "Wpisz tutaj swoj adres e-mail: " email
@@ -56,20 +53,15 @@ while [ -z "$user_password" ]; do
 done
 
 clear
-echo "Rozpoczynam instalację..."
+echo "Konfiguracja bazy danych..."
 
-# --- KONFIGURACJA BAZY DANYCH ---
-# Automatyczne utworzenie bazy i użytkownika
 mariadb -u root -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DB};"
 mariadb -u root -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'127.0.0.1' IDENTIFIED BY '${MYSQL_PASSWORD}';"
 mariadb -u root -e "GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO '${MYSQL_USER}'@'127.0.0.1' WITH GRANT OPTION; FLUSH PRIVILEGES;"
 
-# --- INSTALACJA PLIKÓW ---
 mkdir -p /var/www/pterodactyl
 cd /var/www/pterodactyl || exit
 
-# Zakładam, że pliki panelu już tam są lub zostaną pobrane. 
-# Jeśli ich nie ma, odkomentuj poniższe linie:
 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
 tar -xzvf panel.tar.gz
 chmod -R 755 storage/* bootstrap/cache/
@@ -78,7 +70,6 @@ cp .env.example .env
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader -n
 php artisan key:generate --force
 
-# Konfiguracja środowiska
 php artisan p:environment:setup \
     --author="$email" \
     --url="$app_url" \
@@ -100,7 +91,6 @@ php artisan p:environment:database \
 
 php artisan migrate --seed --force
 
-# Tworzenie użytkownika
 php artisan p:user:make \
     --email="$user_email" \
     --username="$user_username" \
@@ -109,10 +99,8 @@ php artisan p:user:make \
     --password="$user_password" \
     --admin=1
 
-# Uprawnienia (Standard dla Debian/Ubuntu to www-data)
-chown -R nginx:nginx /var/www/pterodactyl/*
+chown -R www-data:www-data /var/www/pterodactyl/*
 
-# --- SERWIS KOLEJKI ---
 cat <<EOF > /etc/systemd/system/pteroq.service
 [Unit]
 Description=Pterodactyl Queue Worker
@@ -134,14 +122,14 @@ EOF
 systemctl enable --now redis-server
 systemctl enable --now pteroq.service
 
-# --- NGINX ---
-apt install nginx -y
+PHP_VAL=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
+
 rm -f /etc/nginx/sites-enabled/default
 
 cat <<EOF > /etc/nginx/sites-available/pterodactyl.conf
 server {
     listen 80;
-    server_name 0.0.0.0; # Możesz tu wpisać domenę
+    server_name _;
 
     root /var/www/pterodactyl/public;
     index index.php;
@@ -164,7 +152,7 @@ server {
 
     location ~ \.php$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php${PHP_VAL}-fpm.sock;
         fastcgi_index index.php;
         include fastcgi_params;
         fastcgi_param PHP_VALUE "upload_max_filesize = 100M \n post_max_size=100M";
@@ -199,7 +187,7 @@ echo "+------------------------------------------------+"
 
 read -p "Czy chcesz uruchomic menu glowne? (t/n): " odpowiedz
 
-if [[ "$odpowiedz" == "t" || "$odpowiedz" == "T" ]]; then
+if [[ "$odpowiedz" =~ ^[tT]$ ]]; then
     clear
     if [ -n "$HOST_MAN_LINK" ]; then
         bash <(curl -sSf "$HOST_MAN_LINK")
