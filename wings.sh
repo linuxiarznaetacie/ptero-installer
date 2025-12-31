@@ -63,17 +63,22 @@ while [ -z "$UUID" ]; do
 done
 
 while [ -z "$TOKEN_ID" ]; do
-    read -s -p "Hasło do bazy MySQL: " TOKEN_ID
+    read -s -p "Wpisz swoj Token ID: " TOKEN_ID
     echo ""
 done
 
 while [ -z "$TOKEN" ]; do
-    read -s -p "Hasło do bazy MySQL: " TOKEN
+    read -s -p "Wpisz swoj Token: " TOKEN
     echo ""
 done
 
 while [ -z "$REMOTE" ]; do
-    read -s -p "Hasło do bazy MySQL: " REMOTE
+    read -s -p "Wpisz swoj adres panelu remote: " REMOTE
+    echo ""
+done
+
+while [ -z "$PORT" ]; do
+    read -s -p "Wpisz swoj port wings: " PORT
     echo ""
 done
 
@@ -92,7 +97,7 @@ token_id: $TOKEN_ID
 token: $TOKEN
 api:
   host: 0.0.0.0
-  port: 8080
+  port: $PORT
   ssl:
     enabled: true
     cert: /etc/certs/fullchain.pem
