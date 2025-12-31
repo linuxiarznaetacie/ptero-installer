@@ -181,7 +181,7 @@ echo "+------------------------------------------------+"
 echo "        POMYSLNIE ZAINSTALOWANO PANEL"
 echo "  "
 echo "       ZALOGUJ SIE DO PANELU POD ADRESEM:"
-echo "             http://$PUBLIC_IP"
+echo "             http://$PUBLIC_IP:80"
 echo "  "
 echo "+------------------------------------------------+"
 
